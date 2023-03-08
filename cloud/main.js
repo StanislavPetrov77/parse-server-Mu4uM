@@ -1,7 +1,3 @@
-require("./functions/hello");
-// require("./functions/resetPlayerNotes");
-
+require('./functions/isLoggedIn')
 // require("./triggers/testObject");
 // require("./triggers/player");
-
-

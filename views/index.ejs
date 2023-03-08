@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>My4uM</title>
+  <%- include('partials/head'); %>
+</head>
+
+<body data-bs-theme='light' class="bg-secondary" style="padding-top: 56px;">
+
+  <header>
+    <%- include('partials/nav'); %>
+    <div id="info-message-wrapper" class="mb-1" style="width: 100%;"></div>
+  </header>
+
+  <main>
+    <!-- <div class="my-1 text-center">
+      <button id="test-button" class="btn btn-light mb-1">Test button</button>
+      <span class="p-2 pt-1 m-2 bg-light" id="test-results"></span>
+    </div> -->
+
+    <!-- React feed -->
+    <div id="feed-wrapper"></div>
+  </main>
+
+  <footer>
+    <%- include('partials/footer'); %>
+    <script src="/public/assets/js/script.js" type="text/babel"></script>
+  </footer>
+ 
+</body>
+</html>

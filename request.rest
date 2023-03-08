@@ -1,0 +1,30 @@
+
+curl -X POST \
+  -H "X-Parse-Application-Id: myAppId" \
+  -H "X-Parse-REST-API-Key: undefined" \
+  -H "X-Parse-Revocable-Session: 1" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"cooldude6","password":"p_n7!-e8"}' \
+  http://localhost:1337/parse/users
+
+###
+
+curl -X GET \
+  -H "X-Parse-Application-Id: myAppId" \
+  -H "X-Parse-REST-API-Key: undefined" \
+  -H "X-Parse-Session-Token: r:51ea7c194cfb34ae0f229a80d94116fb" \
+  http://localhost:1337/parse/users/me
+
+###
+
+  curl -X GET \
+  -H "X-Parse-Application-Id: myAppId" \
+  -H "X-Parse-REST-API-Key: undefined" \
+  http://localhost:1337/parse/users
+
+###
+
+curl -X GET \
+  -H "X-Parse-Application-Id: myAppId" \
+  -H "X-Parse-REST-API-Key: undefined" \
+  http://localhost:1337/parse/config

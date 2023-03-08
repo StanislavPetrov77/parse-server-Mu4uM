@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Home Test Page</title>
+  <%- include('partials/head'); %>
+</head>
+
+<body data-bs-theme='dark' style="padding-top: 56px;">
+
+  <header>
+    <%- include('partials/nav'); %>
+  </header>
+
+  <main>
+
+    <div class="container">
+      <div class="card m-2 p-3">
+        <h2>Sign Up</h2>
+
+        <form id="signupForm" name="signupForm" class="row g-2 needs-validation" novalidate>
+          <div class="form-floating mb-2">
+            <input
+              type="email"
+              class="form-control"
+              id="signupEmail"
+              name="signupEmail"
+              placeholder="Email"
+              minlength="8"
+              maxlength="30"
+              required>
+              <label for="signupEmail">Email address</label>
+          </div>
+          <div class="form-floating mb-2">
+            <input
+              type="password"
+              class="form-control"
+              id="signupPassword"
+              name="signupPassword"
+              placeholder="Password"
+              minlength="8"
+              maxlength="30"
+              required>
+              <label for="signupPassword">Password</label>
+          </div>
+          <div>
+            <button id="signupSubmit" class="btn btn-outline-secondary" type="submit">Sign Up</button>                
+            <p style="display: inline;">Already registered?</p> <a href="/login">Log In!</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <%- include('partials/footer'); %>
+    <script src="public/assets/js/sign-log.js" type="text/babel"></script>
+  </footer>
+ 
+</body>
+</html>
