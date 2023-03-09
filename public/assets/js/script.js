@@ -106,12 +106,6 @@ $(document).ready(() => {
     else if (days   > 0) return (days   + 'd' + `${hours  > 0 ? ' ' + hours   + 'h' : ''} ago`)
     else if (hours  > 0) return (hours  + 'h' + `${mins   > 0 ? ' ' + mins    + 'm' : ''} ago`)
     else if (mins   > 0) return (mins   +                                            'min ago')
-
-    // return (`${years  > 0 ? years   + ' years, '  : ''}` +
-    //         `${months > 0 ? months  + ' months, ' : ''}` +
-    //         `${days   > 0 ? days    + ' days, '   : ''}` +
-    //         `${hours  > 0 ? hours   + ' hours, '  : ''}` +
-    //         `${mins   > 0 ? mins    + ' min'      : ''} ago`)
   }
 
   function Avatar(props) {
@@ -129,7 +123,7 @@ $(document).ready(() => {
   }
 
     
-  function WriteAComment(props) {
+  function CreateComment(props) {
     const { avatar, author, createdAt, content } = props.post
     const [state, setState] = React.useState('success')
 
@@ -169,7 +163,7 @@ $(document).ready(() => {
     const lines = []
 
     let link = undefined
-    linesArray.forEach(line => {
+    linesArray.forEach((line, index) => {
       switch (line) { 
         case 0: link = '/public/assets/images/comment-none.png'; break
         case 1: link = '/public/assets/images/comment-line.png'; break
@@ -177,7 +171,7 @@ $(document).ready(() => {
         case 3: link = '/public/assets/images/comment-last.png'; break
         default: link = undefined
       }
-      if (link) lines.push( <img style={{width: width, height: '100%'}} className="img-fluid" src={link} /> )
+      if (link) lines.push( <img style={{width: width, height: '100%'}} className="img-fluid" src={link} key={index} /> )
     })
 
     return (
@@ -187,6 +181,13 @@ $(document).ready(() => {
     )
   }
 
+  function CreatePost (props) {
+    return (
+      <span>
+        <button className="btn btn-sm btn-primary">Test</button>
+      </span>
+    )
+  }
   // PostCard element
   function PostCard(props) {
     const { post, linesArray } = props
@@ -219,9 +220,9 @@ $(document).ready(() => {
             <div className='card-footer text-end row m-0 p-0 border-secondary-subtle'>
               <div className='text-muted m-0 p-0 px-2 d-inline'>
                 {post.get('childPosts').length} comments
-                <a className='link-danger m-1' onClick={() => { deletePost(post) }}>Delete</a>
                 <a className='link-primary m-1' onClick={() => { createPost(post) }}>Comment</a>
-                <a className='link-primary m-1' onClick={() => {  }}>More...</a>
+                <a className='link-danger m-1' onClick={() => { deletePost(post) }}>Delete</a>
+                {/* <a className='link-primary m-1' onClick={() => {  }}>More...</a> */}
               </div>
             </div>
           </div>
@@ -263,6 +264,7 @@ $(document).ready(() => {
     return (
       <div className='container-sm px-0'>
         <button className='btn btn-sm btn-primary m-1' onClick={() => { createPost() }}>Create a post</button>
+        <CreatePost />
         {cards}
       </div>
     )
@@ -349,10 +351,5 @@ $(document).ready(() => {
 
   slideMessage('Welcome to My4uM', 6, 'bg-success')
   render()
-
-  // newWrapper.render(<Avatar avatar={currentUser.get('avatar').url()} />)
-
-  // $('#test-results').text()
-  // $('#test-button').click(() => {
  
 }) // document.ready
