@@ -2,6 +2,8 @@ if (process.env.NODE_ENV !== 'production') require('dotenv').config()
 
 const express = require('express')
 const { ParseServer } = require('parse-server')
+const ParseDashboard = require('parse-dashboard')
+
 const { parse } = require('path')
 
 // const S3Adapter = require('parse-server').S3Adapter
@@ -77,6 +79,29 @@ const server = new ParseServer({
 // If you wish you require them, you can set them as options in the initialization above:
 // javascriptKey, restAPIKey, dotNetKey, clientKey
 
+// const dashboard = new ParseDashboard({
+// 	apps: [
+// 	  {
+// 		serverURL: process.env.SERVER_URL,
+// 		appId: process.env.APP_ID,
+// 		masterKey: process.env.MASTER_KEY,
+// 		appName: process.env.APP_NAME
+// 	  }
+// 	],
+// 	users: [
+// 	  {
+// 		user: process.env.ADMIN_USER,
+// 		pass: process.env.ADMIN_PASSWORD,
+// 		apps: [
+// 		  {
+// 			appId: process.env.APP_ID
+// 		  }
+// 		]
+// 	  }
+// 	]
+  
+//   }, { allowInsecureHTTP: true })
+
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')))
 
@@ -84,6 +109,8 @@ app.use('/public', express.static(path.join(__dirname, '/public')))
 // Serve the Parse API on the /parse URL prefix
 const mountPath = process.env.PARSE_MOUNT || '/parse'
 app.use(mountPath, server)
+// app.use('/dashboard', dashboard)
+
 
 app.get('/', (req, res) => res.render('index'))
 

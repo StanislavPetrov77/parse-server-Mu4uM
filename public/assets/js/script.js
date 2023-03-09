@@ -165,46 +165,36 @@ $(document).ready(() => {
 
   function Lines(props) {
     const width = '1rem'
-    const { lines } = props
-    const linesArray = []
+    const { linesArray } = props
+    const lines = []
 
-    let link = ''
-    lines.forEach(line => {
-      switch (line ) { 
-        case 'line': link = '/public/assets/images/comment-line.png'; break
-        case 'branch': link = '/public/assets/images/comment-branch.png'; break
-        case 'last': link = '/public/assets/images/comment-last.png'; break
-        default: //link = '/public/assets/images/no-image-available.jpg'
+    let link = undefined
+    linesArray.forEach(line => {
+      switch (line) { 
+        case 0: link = '/public/assets/images/comment-none.png'; break
+        case 1: link = '/public/assets/images/comment-line.png'; break
+        case 2: link = '/public/assets/images/comment-branch.png'; break
+        case 3: link = '/public/assets/images/comment-last.png'; break
+        default: link = undefined
       }
-      if (link) linesArray.unshift( <img style={{width: width, height: '100%'}} className="img-fluid" src={link} /> )
+      if (link) lines.push( <img style={{width: width, height: '100%'}} className="img-fluid" src={link} /> )
     })
-    // if (linesCount < 1) return
-
-    // if (lines === ') 
-    //   <img style={{width: width, height: '100%'}} className="img-fluid" src='/public/assets/images/comment-last.png' />
-    //   )
-    // if (lines === 'line') linesArray.unshift(
-    //   <img style={{width: width, height: '100%'}} className="img-fluid" src='/public/assets/images/comment-line.png' />
-    //   )
-    // if (lines === 'branch') linesArray.unshift(
-    //   <img style={{width: width, height: '100%'}} className="img-fluid" src='/public/assets/images/comment-branch.png' />
-    //   )
 
     return (
       <div className='col-auto p-0 m-0'>
-        {linesArray}
+        {lines}
       </div>
     )
   }
 
   // PostCard element
   function PostCard(props) {
-    const { post } = props
+    const { post, linesArray } = props
     return (
-      <div className='card rounded-0 text-start py-0 pr-0 mt-0 mb-0' style={{paddingLeft: `${post.get('commentDepth') * 20}px`}}>
+      <div className='card rounded-0 text-start py-0 pr-0 mt-0 mb-0'>
         <div className="row m-0 p-0">
 
-          <Lines lines = { post.get('lines') } />
+          <Lines linesArray={linesArray} />
           
           <div className="col">
             {/* Header */}
@@ -215,7 +205,7 @@ $(document).ready(() => {
               </div>
 
               <div className='col px-2 my-auto'>
-                  <h6 className='m-0'>{post._getId()}. {post.get('author').get('username')}</h6>
+                  <h6 className='m-0'>{post._getId()}, {post.get('author').get('username')}</h6>
                   <p className='text-muted m-0'>{timeDiff(post.get('createdAt'))}</p>
               </div>
             </div>
@@ -241,29 +231,41 @@ $(document).ready(() => {
   }
 
   function Posts(props) {
-    const { posts } = props
+    const { allPosts } = props
     const cards = []
-    if (posts.length < 1) return (
+
+    if (allPosts.length < 1) return (
       <div className='container-fluid text-center my-5'>
         <h2>There are no posts yet!</h2>
-        <button className='btn btn-sm btn-primary m-1' onClick={() => { createPost() }}>Create a post</button>
+        <button className='btn btn-sm btn-primary m-1' onClick={() => { createPost() }}>Create post</button>
       </div>
-      )
-    
-    const rootPosts = posts.filter(p => p.get('commentDepth') === 0)
-    rootPosts.forEach(post => {
-      function pushCard(currPost) {
-        cards.push( <PostCard post={currPost} key={currPost._getId()} /> )
-        currPost.get('childPosts').forEach(childPost => pushCard(childPost))
+    )
+
+    function pushCard(post, prev = []) {
+      let lineNeeded = 1, ending
+      const linesArray = prev, parrentPost = post.get('parrentPost')
+
+      if (parrentPost) {
+        const siblings = parrentPost.get('childPosts')
+        if (siblings.length === 1) {lineNeeded = 0; ending = 3}
+        else {
+          if (siblings.at(-1) === post) {lineNeeded = 0; ending = 3}
+          else ending = 2
+        }
       }
-      pushCard(post)
-    })
+      cards.push( <PostCard post={post} linesArray={[...linesArray.slice(1), ending]} key={post._getId()} /> )
+      post.get('childPosts').forEach(childPost => pushCard(childPost, [...linesArray, lineNeeded]))
+    }
+
+    const rootPosts = allPosts.filter(post => post.get('parrentPost') === undefined)
+    rootPosts.forEach(rootPost => pushCard(rootPost))
+
     return (
       <div className='container-sm px-0'>
         <button className='btn btn-sm btn-primary m-1' onClick={() => { createPost() }}>Create a post</button>
         {cards}
-        </div>
-        )
+      </div>
+    )
   }
 
   async function createPost(parrentPost = undefined) {
@@ -271,24 +273,19 @@ $(document).ready(() => {
     newPost.set('author', Parse.User.current())
     newPost.set('childPosts', [])
     if (parrentPost) {
-      if (parrentPost.get('childPosts').length === 0 )
-        newPost.set('lines', ["last"])
-      else
-        newPost.set('lines', ["branch"])
       newPost.set('parrentPost', parrentPost)
       newPost.set('commentDepth', parrentPost.get('commentDepth') + 1)
-      newPost.set('content', `${parrentPost._getId()}, Depth ${parrentPost.get('commentDepth') + 1}`)
+      newPost.set('content', `Parrent post: ${parrentPost._getId()}, Depth ${parrentPost.get('commentDepth') + 1}`)
     } else {
       newPost.set('commentDepth', 0)
       newPost.set('content', `RootRoot, Depth 0`)
-      newPost.set('lines', [])
     }
 
     try {
       const savedPost = await newPost.save()
       if (parrentPost) {
         const arr = parrentPost.get('childPosts')
-        arr.unshift(savedPost)
+        arr.push(savedPost)
         parrentPost.set('childPosts', arr)
         await parrentPost.save()
       }
@@ -307,16 +304,12 @@ $(document).ready(() => {
     // }
 
     async function deleteChild(currPost) {
-      // console.log(`Request to delete : ${currPost.get('content')}`)
       // await sleep(1500)
       const children = currPost.get('childPosts')
       for(let child of children) {await deleteChild(child)}
 
       try {
-        // console.log(`Deleting : ${currPost.get('content')}`)
-        
         await currPost.destroy()
-        // await sleep(1500)
       } catch(error) {
         print(`Error deleting post/comment: ${error}`)
       }
@@ -329,10 +322,7 @@ $(document).ready(() => {
         let parrentChildPosts = parrentPost.get('childPosts')
         parrentChildPosts = parrentChildPosts.filter(child => child !== postToDelete)
         parrentPost.set('childPosts', parrentChildPosts)
-        // console.log('fixing parrentPost pointer')
         await parrentPost.save()
-        // await sleep(3000)
-        // console.log('Success!')
       } catch(error) {
         print(`Error deleting child from parrent: ${error}`)
       }
@@ -348,15 +338,13 @@ $(document).ready(() => {
     query.limit(limit)
     query.skip(skip)
     try {
-      const posts = await query.find()
-      // console.log(`----- ReRendering ${posts.length} posts ------`)
-      for (const p of posts) { await p.fetchWithInclude(['author', 'childPosts']) }
-      // print(`${posts.length} posts fetched`)
-      feedWrapper.render(<Posts posts={posts} />)
-  } catch(error) {
+      const allPosts = await query.find()
+      for (const post of allPosts) { await post.fetchWithInclude(['author', 'childPosts']) }
+      feedWrapper.render(<Posts allPosts={allPosts} />)
+
+    } catch(error) {
       print(`Error getting posts: ${error}`)
     }
-
   }
 
   slideMessage('Welcome to My4uM', 6, 'bg-success')
