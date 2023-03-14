@@ -13,7 +13,7 @@ $(document).ready(() => {
     get authorName()    { return this.get('author').get('username')}
     get authorAvatar()  { return this.get('author').get('avatar').url()}
     get childPosts()    { return this.get('childPosts')}
-    get parrentPost()   { return this.get('parrentPost')}
+    get parentPost()    { return this.get('parentPost')}
     get createdAt()     { return this.get('createdAt')}
 
     set content(content)              { this.set('content', content)}
@@ -21,7 +21,7 @@ $(document).ready(() => {
     set childPosts(childPosts)        { this.set('childPosts', childPosts)}
     set childPostsUnshift(childPost)  { this.childPosts.unshift(childPost); this.set('childPosts', this.childPosts)}
     set childPostsRemove(childPost)   { this.set('childPosts', this.childPosts.filter(p => p != childPost))}
-    set parrentPost(parrentPost)      { this.set('parrentPost', parrentPost)}
+    set parentPost(parentPost)        { this.set('parentPost', parentPost)}
 
     // set authorName(authorName) { this.get('author').set('username', authorName)}
     // set authorAvatar(authorAvatar) { this.get('author').set('avatar').url()}
@@ -242,7 +242,7 @@ $(document).ready(() => {
     const [ feed, setFeed ] = React.useState([])
 
     async function feedPush(post, prevLinesArray) {          // <----------- feedPush Starts here
-      const parrentPost = post.parrentPost
+      const parentPost = post.parentPost
       const children = post.childPosts
       let lineNeeded = undefined, ending = undefined
       const linesArray = prevLinesArray
@@ -253,10 +253,10 @@ $(document).ready(() => {
         print(`Error fetching post in Feed: ${error}`)
       }
 
-      if (!parrentPost) {                                    // no parrentPost - it's a Root Post !
+      if (!parentPost) {                                    // no parentPost - it's a Root Post !
         linesArray.length = 0
       } else {
-        const siblings = parrentPost.childPosts
+        const siblings = parentPost.childPosts
 
         if (siblings.length === 1) {                         // if it's only child
           ending = 3
@@ -318,7 +318,7 @@ $(document).ready(() => {
     </>)
   }
 
-  async function createPost(parrentPost = undefined, content = undefined) {
+  async function createPost(parentPost = undefined, content = undefined) {
     if (!content) return
 
     const newPost = new Posts()
@@ -326,13 +326,13 @@ $(document).ready(() => {
     newPost.childPosts = []
     newPost.content = content
 
-    newPost.parrentPost = parrentPost
+    newPost.parentPost = parentPost
 
     try {
       const savedPost = await newPost.save()
-      if (parrentPost) {
-        parrentPost.childPostsUnshift = savedPost
-        await parrentPost.save()
+      if (parentPost) {
+        parentPost.childPostsUnshift = savedPost
+        await parentPost.save()
       }
       refresh()
     } catch(error) {
@@ -342,7 +342,7 @@ $(document).ready(() => {
 
   async function deletePost(postToDelete = undefined) {
     if (!postToDelete) return
-    const parrentPost = postToDelete.parrentPost
+    const parentPost = postToDelete.parentPost
 
     async function deleteChild(currPost) {
       const children = currPost.childPosts
@@ -363,13 +363,13 @@ $(document).ready(() => {
     }
     await deleteChild(postToDelete)
 
-    if (parrentPost) {
+    if (parentPost) {
       try {
-        parrentPost.childPostsRemove = postToDelete
-        await parrentPost.save()
+        parentPost.childPostsRemove = postToDelete
+        await parentPost.save()
         refresh()
       } catch(error) {
-        print(`Error deleting child from parrent: ${error}`)
+        print(`Error deleting child from parent: ${error}`)
       }
     } else refresh()
   }
@@ -378,7 +378,7 @@ $(document).ready(() => {
     feedDiv.render()
     const limit = 100, skip = 0
     const query = new Parse.Query(Posts)
-    query.equalTo('parrentPost', undefined)           // condition to find root posts ONLY
+    query.equalTo('parentPost', undefined)           // condition to find root posts ONLY
     query.descending('createdAt')                     // sorting newest first
     query.limit(limit)
     query.skip(skip)                                  // Will be used to implement pagination
@@ -390,7 +390,7 @@ $(document).ready(() => {
         feedDiv.render([<Header key = {'Header'} />, <Feed posts = {rootPosts} key = {'Feed'} />])
       }
     } catch(error) {
-      print(`Error getting parrentPosts: ${error}`)
+      print(`Error getting parentPosts: ${error}`)
     }
   }
   isLoggedIn().then(() => refresh())
