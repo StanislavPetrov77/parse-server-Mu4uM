@@ -5,14 +5,36 @@ Parse.initialize('myAppId')
 Parse.serverURL = SERVER_URL
 
 $(document).ready(() => {
-  const feedNode = document.getElementById('feed-wrapper')
-  const feedWrapper = ReactDOM.createRoot(feedNode)
+  class Posts extends Parse.Object {
+    constructor() { super('Posts') }
+
+    get content()       { return this.get('content')}
+    get author()        { return this.get('author')}
+    get authorName()    { return this.get('author').get('username')}
+    get authorAvatar()  { return this.get('author').get('avatar').url()}
+    get childPosts()    { return this.get('childPosts')}
+    get parrentPost()   { return this.get('parrentPost')}
+    get createdAt()     { return this.get('createdAt')}
+
+    set content(content)              { this.set('content', content)}
+    set author(author)                { this.set('author', author)}
+    set childPosts(childPosts)        { this.set('childPosts', childPosts)}
+    set childPostsUnshift(childPost)  { this.childPosts.unshift(childPost); this.set('childPosts', this.childPosts)}
+    set childPostsRemove(childPost)   { this.set('childPosts', this.childPosts.filter(p => p != childPost))}
+    set parrentPost(parrentPost)      { this.set('parrentPost', parrentPost)}
+
+    // set authorName(authorName) { this.get('author').set('username', authorName)}
+    // set authorAvatar(authorAvatar) { this.get('author').set('avatar').url()}
+  }
+  Parse.Object.registerSubclass('Posts', Posts)
+
+  const postFeedNode = document.getElementById('post-feed')
+  const feedDiv = ReactDOM.createRoot(postFeedNode)
 
   const newNode = document.getElementById('new-wrapper')
   const newWrapper = ReactDOM.createRoot(newNode)
 
-  let currentUser
-  const showCurrentUser = message => $('#current-user').text(message)
+  let admin, moderator, currentUser
 
   function slideMessage(message, timeOut = 6, color = 'bg-success') {
     const messageDiv = document.createElement('div')
@@ -30,7 +52,7 @@ $(document).ready(() => {
   }
 
   function print(message) {
-    if (PRODUCTION) console.log(`E--> ${message}`)
+    if (PRODUCTION) console.log(`Message --> ${message}`)
     else {
       slideMessage(message, 10, `bg-info`)
     }
@@ -39,13 +61,18 @@ $(document).ready(() => {
   async function isLoggedIn() {
     try {
       const { isLoggedIn } = await Parse.Cloud.run("isLoggedIn")
-    
+
       if (isLoggedIn) {
         currentUser = Parse.User.current()
-        showCurrentUser(`Logged in as: ${currentUser.get('username')}`)
+        const query = await new Parse.Query(Parse.Role).equalTo('users', currentUser).find()
+        for (const role of query) {if (role.get('name') === 'admin') admin = true}
+        for (const role of query) {if (role.get('name') === 'moderator') moderator = true}
+        $('#current-user').text(`Logged in as: ${currentUser.get('username')} ${admin ? '(admin) ' : ''} ${moderator ? '(moderator) ' : ''}`)
       } else {
+        admin = undefined
+        moderator = undefined
         currentUser = undefined
-        showCurrentUser(`NOT logged in`)
+        $('#current-user').text(`NOT logged in`)
       }
     } catch(error) {
       print(`ERROR in the catch in isLoggedIn scripts.js! ${error}`)
@@ -111,7 +138,7 @@ $(document).ready(() => {
   function Avatar(props) {
     return (
       <img 
-      style={{height: '3rem', borderRadius: '50%'}}
+      style={{height: '2rem', borderRadius: '50%'}}
       className="img-fluid"
       src={props.avatar} 
       alt="No image available"
@@ -119,41 +146,6 @@ $(document).ready(() => {
         currentTarget.onerror = null
         currentTarget.src= DEFAULT_AVATAR
       }} />
-    )
-  }
-
-    
-  function CreateComment(props) {
-    const { avatar, author, createdAt, content } = props.post
-    const [state, setState] = React.useState('success')
-
-    // const funct = () => {
-    //   setState('loading')
-    //   call.func()
-    //     .then(succ => {
-    //       setState('success')
-    //     })      
-    //     .catch(error => {
-    //       console.log(error)
-    //       setState(error)
-    //     })      
-    // }
-    // React.useEffect(() => {
-    //   funct()
-    // }, [])
-
-  
-    return (
-      <div className='card-footer row m-0 p-0'>
-        <div className='col-auto p-1'>
-          <Avatar avatar={avatar} />
-        </div>
-
-        <div className='col px-2 my-auto'>
-          <h6 className='m-0'>{author}</h6>
-          <p className='text-muted m-0'>{timeDiff(createdAt)}</p>
-        </div>
-      </div>
     )
   }
 
@@ -174,182 +166,232 @@ $(document).ready(() => {
       if (link) lines.push( <img style={{width: width, height: '100%'}} className="img-fluid" src={link} key={index} /> )
     })
 
-    return (
-      <div className='col-auto p-0 m-0'>
-        {lines}
-      </div>
-    )
+    return (<>{lines}</>)
   }
 
-  function CreatePost (props) {
-    return (
-      <span>
-        <button className="btn btn-sm btn-primary">Test</button>
-      </span>
-    )
-  }
   // PostCard element
-  function PostCard(props) {
+  function Post(props) {
     const { post, linesArray } = props
-    return (
-      <div className='card rounded-0 text-start py-0 pr-0 mt-0 mb-0'>
+    const [ showComments, setShowComments ] = React.useState(true)
+    const [ commentArea, setCommentArea ] = React.useState(false)
+    let childPosts = post.childPosts
+
+    return (<>
+      <div className='post-card-element card rounded-1 text-start py-0 mt-0 mb-1'>
         <div className="row m-0 p-0">
 
-          <Lines linesArray={linesArray} />
-          
-          <div className="col">
-            {/* Header */}
+          <div className='col-auto p-0 m-0'>
+            <Lines linesArray = {linesArray} />
+          </div>
+
+          <div className="col p-0">
             <div className='card-header row m-0 p-0 border-secondary-subtle'>
 
               <div className='col-auto p-1'>
-                  <Avatar avatar={post.get('author').get('avatar').url()} />
+                  <Avatar avatar={post.authorAvatar} />
               </div>
 
               <div className='col px-2 my-auto'>
-                  <h6 className='m-0'>{post._getId()}, {post.get('author').get('username')}</h6>
-                  <p className='text-muted m-0'>{timeDiff(post.get('createdAt'))}</p>
+                  <h6 className='m-0'>{post.authorName}</h6>
+                  <p className='text-muted m-0'>{timeDiff(post.createdAt)}</p> {/* Create as component */}
               </div>
             </div>
 
-            {/* Content */}
             <div className="card-body px-2 py-1">
-              <p className="card-text">{post.get('content')}</p>
+              <p className="card-text">{post.content}</p>
             </div>
 
-            {/* Footer */}
             <div className='card-footer text-end row m-0 p-0 border-secondary-subtle'>
-              <div className='text-muted m-0 p-0 px-2 d-inline'>
-                {post.get('childPosts').length} comments
-                <a className='link-primary m-1' onClick={() => { createPost(post) }}>Comment</a>
-                <a className='link-danger m-1' onClick={() => { deletePost(post) }}>Delete</a>
-                {/* <a className='link-primary m-1' onClick={() => {  }}>More...</a> */}
+              <div className='text-muted m-0 p-0 d-inline'>
+                {(childPosts.length > 0) && (!showComments) &&
+                  <button className='btn btn-sm btn-primary m-1' onClick={() => {
+                    setShowComments(true) }}>View {childPosts.length} comment(s)</button>}
+
+                {(childPosts.length > 0) && (showComments) &&
+                  <button className='btn btn-sm btn-primary m-1' onClick={() => {
+                    setShowComments(false) }}>Hide {childPosts.length} comment(s)</button>}
+
+                {(currentUser) && <button className='btn btn-sm btn-primary m-1' onClick={() => {
+                  setCommentArea(prev => !prev)
+                }}>Comment</button>}
+
+                {(admin || moderator) && <button className='btn btn-sm btn-danger m-1' onClick={() => {
+                  deletePost(post)
+                }}>Delete</button>}
               </div>
             </div>
+            {(commentArea) && <div className='row mx-1 mb-1'>
+              <textarea id='create-comment-text' className="col" onChange={() => {
+                ($('#create-comment-text').val() === '') ? 
+                  $('#create-comment-button').addClass('disabled') : $('#create-comment-button').removeClass('disabled')
+              }} placeholder = "Write a comment here..." rows="1" required></textarea>
+
+              <button id='create-comment-button' className='col-auto btn btn-sm btn-primary ms-1 disabled'onClick={() => {
+                if ($('#create-comment-text').val()) createPost(post, $('#create-comment-text').val())
+              }}>Post comment</button>
+            </div>}            
           </div>
         </div>
+
       </div>
-    )
+    </>)
   }
 
-  function Posts(props) {
-    const { allPosts } = props
-    const cards = []
+  function Feed(props) {
+    const { posts } = props
+    const [ feed, setFeed ] = React.useState([])
 
-    if (allPosts.length < 1) return (
-      <div className='container-fluid text-center my-5'>
-        <h2>There are no posts yet!</h2>
-        <button className='btn btn-sm btn-primary m-1' onClick={() => { createPost() }}>Create post</button>
-      </div>
-    )
+    async function feedPush(post, prevLinesArray) {          // <----------- feedPush Starts here
+      const parrentPost = post.parrentPost
+      const children = post.childPosts
+      let lineNeeded = undefined, ending = undefined
+      const linesArray = prevLinesArray
 
-    function pushCard(post, prev = []) {
-      let lineNeeded = 1, ending
-      const linesArray = prev, parrentPost = post.get('parrentPost')
+      try {
+        await post.fetchWithInclude(['childPosts', 'author'])
+      } catch(error) {
+        print(`Error fetching post in Feed: ${error}`)
+      }
 
-      if (parrentPost) {
-        const siblings = parrentPost.get('childPosts')
-        if (siblings.length === 1) {lineNeeded = 0; ending = 3}
-        else {
-          if (siblings.at(-1) === post) {lineNeeded = 0; ending = 3}
-          else ending = 2
+      if (!parrentPost) {                                    // no parrentPost - it's a Root Post !
+        linesArray.length = 0
+      } else {
+        const siblings = parrentPost.childPosts
+
+        if (siblings.length === 1) {                         // if it's only child
+          ending = 3
+          lineNeeded = 0
+        } else {
+          if (post.id === siblings.at(-1).id) {              // if oldest
+            lineNeeded = 0
+            ending = 3
+          } else {                                           // branch
+            lineNeeded = 1
+            ending = 2
+          }
         }
       }
-      cards.push( <PostCard post={post} linesArray={[...linesArray.slice(1), ending]} key={post._getId()} /> )
-      post.get('childPosts').forEach(childPost => pushCard(childPost, [...linesArray, lineNeeded]))
+
+      setFeed(prev => [...prev, <Post post = {post} linesArray = {[...linesArray, ending]} key = {post.id} />])
+
+      if (children.length > 0) {
+        for (const child of children) {
+          await feedPush(child, [...linesArray, lineNeeded])
+        }
+      }
     }
 
-    const rootPosts = allPosts.filter(post => post.get('parrentPost') === undefined)
-    rootPosts.forEach(rootPost => pushCard(rootPost))
+    async function rootPush() { for (const post of posts) await feedPush(post, []) }
 
-    return (
-      <div className='container-sm px-0'>
-        <button className='btn btn-sm btn-primary m-1' onClick={() => { createPost() }}>Create a post</button>
-        <CreatePost />
-        {cards}
-      </div>
-    )
+    React.useEffect(() => { rootPush() }, [])
+    return (<>{feed}</>)
   }
 
-  async function createPost(parrentPost = undefined) {
-    const newPost = new Parse.Object('Posts')
-    newPost.set('author', Parse.User.current())
-    newPost.set('childPosts', [])
-    if (parrentPost) {
-      newPost.set('parrentPost', parrentPost)
-      newPost.set('commentDepth', parrentPost.get('commentDepth') + 1)
-      newPost.set('content', `Parrent post: ${parrentPost._getId()}, Depth ${parrentPost.get('commentDepth') + 1}`)
-    } else {
-      newPost.set('commentDepth', 0)
-      newPost.set('content', `RootRoot, Depth 0`)
-    }
+  function Header(props) {
+    return (<>
+      <div className='row m-0 mb-1'>
+        <textarea id='create-post-text' className="col" onChange={() => {
+          ($('#create-post-text').val() === '') ? 
+            $('#create-post-button').addClass('disabled') : $('#create-post-button').removeClass('disabled')
+        }} placeholder = "What's on your mind?" rows="1" required></textarea>
+
+        <button id='create-post-button' className='col-auto btn btn-sm btn-primary ms-1 disabled' onClick={() => {
+            createPost(undefined , $('#create-post-text').val())
+        }}>Create post</button>
+      </div>
+    </>)
+  }
+
+  function NoPostsYet() {
+    return (<>
+      <h2 className='m-5'>There are no posts yet!</h2>
+      <div className='row m-5'>
+        <textarea id='create-post-text' className='col' onChange={() => {
+          ($('#create-post-text').val() === '') ? 
+            $('#create-post-button').addClass('disabled') : $('#create-post-button').removeClass('disabled')
+        }} placeholder='You can be the first to posts here!' rows='2' required></textarea>
+
+        <button id='create-post-button' className='col-auto btn btn-primary ms-1 disabled' onClick={() => {
+          createPost(undefined, $('#create-post-text').val())
+        }}>Create post</button>
+      </div>
+    </>)
+  }
+
+  async function createPost(parrentPost = undefined, content = undefined) {
+    if (!content) return
+
+    const newPost = new Posts()
+    newPost.author = Parse.User.current()
+    newPost.childPosts = []
+    newPost.content = content
+
+    newPost.parrentPost = parrentPost
 
     try {
       const savedPost = await newPost.save()
       if (parrentPost) {
-        const arr = parrentPost.get('childPosts')
-        arr.push(savedPost)
-        parrentPost.set('childPosts', arr)
+        parrentPost.childPostsUnshift = savedPost
         await parrentPost.save()
       }
+      refresh()
     } catch(error) {
-        print(`Error creating post/comment: ${error}`)
+      print(`Error creating post: ${error}`)
     }
-    render()
   }
 
   async function deletePost(postToDelete = undefined) {
     if (!postToDelete) return
-
-
-    // const sleep = async ms => {
-    //   return await new Promise((resolve) => setTimeout(resolve, ms))
-    // }
+    const parrentPost = postToDelete.parrentPost
 
     async function deleteChild(currPost) {
-      // await sleep(1500)
-      const children = currPost.get('childPosts')
-      for(let child of children) {await deleteChild(child)}
+      const children = currPost.childPosts
+      for(const child of children) {
+        try {
+          // await child.fetch() // probably not needed
+          await deleteChild(child)
+        } catch(error) {
+          print(`Error deleteChild post ${currPost.id}: ${error}`)
+        }
+      }
 
       try {
         await currPost.destroy()
       } catch(error) {
-        print(`Error deleting post/comment: ${error}`)
+        print(`Error deleting post ${currPost.id}: ${error}`)
       }
     }
     await deleteChild(postToDelete)
 
-    const parrentPost = postToDelete.get('parrentPost')
     if (parrentPost) {
       try {
-        let parrentChildPosts = parrentPost.get('childPosts')
-        parrentChildPosts = parrentChildPosts.filter(child => child !== postToDelete)
-        parrentPost.set('childPosts', parrentChildPosts)
+        parrentPost.childPostsRemove = postToDelete
         await parrentPost.save()
+        refresh()
       } catch(error) {
         print(`Error deleting child from parrent: ${error}`)
       }
-    }
-    render()
+    } else refresh()
   }
 
-  async function render() {
+  async function refresh() {
+    feedDiv.render()
     const limit = 100, skip = 0
-    const query = new Parse.Query('Posts')
-    // query.equalTo('commentDepth', 0)
-    query.descending('createdAt')
+    const query = new Parse.Query(Posts)
+    query.equalTo('parrentPost', undefined)           // condition to find root posts ONLY
+    query.descending('createdAt')                     // sorting newest first
     query.limit(limit)
-    query.skip(skip)
+    query.skip(skip)                                  // Will be used to implement pagination
     try {
-      const allPosts = await query.find()
-      for (const post of allPosts) { await post.fetchWithInclude(['author', 'childPosts']) }
-      feedWrapper.render(<Posts allPosts={allPosts} />)
-
+      const rootPosts = await query.find()
+      if (rootPosts.length < 1) {
+        feedDiv.render(<NoPostsYet key = {'NoPostsYet'} />)
+      } else {
+        feedDiv.render([<Header key = {'Header'} />, <Feed posts = {rootPosts} key = {'Feed'} />])
+      }
     } catch(error) {
-      print(`Error getting posts: ${error}`)
+      print(`Error getting parrentPosts: ${error}`)
     }
   }
-
-  slideMessage('Welcome to My4uM', 6, 'bg-success')
-  render()
- 
+  isLoggedIn().then(() => refresh())
 }) // document.ready
