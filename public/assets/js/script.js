@@ -1,7 +1,7 @@
 const PRODUCTION = false
 const SERVER_URL = 'http://192.168.1.220:1337/parse'
 const DEFAULT_AVATAR = './public/assets/images/default_user.jpg'
-Parse.initialize('myAppId')
+Parse.initialize('My4uM')
 Parse.serverURL = SERVER_URL
 
 $(document).ready(() => {
@@ -11,7 +11,7 @@ $(document).ready(() => {
     get content()       { return this.get('content')}
     get author()        { return this.get('author')}
     get authorName()    { return this.get('author').get('username')}
-    get authorAvatar()  { return this.get('author').get('avatar').url()}
+    get authorAvatar()  { return this.get('author').get('avatar')?.url() ?? DEFAULT_AVATAR}
     get childPosts()    { return this.get('childPosts')}
     get parentPost()    { return this.get('parentPost')}
     get createdAt()     { return this.get('createdAt')}
@@ -31,8 +31,8 @@ $(document).ready(() => {
   const postFeedNode = document.getElementById('post-feed')
   const feedDiv = ReactDOM.createRoot(postFeedNode)
 
-  const newNode = document.getElementById('new-wrapper')
-  const newWrapper = ReactDOM.createRoot(newNode)
+  // const newNode = document.getElementById('new-wrapper')
+  // const newWrapper = ReactDOM.createRoot(newNode)
 
   let admin, moderator, currentUser
 
@@ -203,19 +203,19 @@ $(document).ready(() => {
 
             <div className='card-footer text-end row m-0 p-0 border-secondary-subtle'>
               <div className='text-muted m-0 p-0 d-inline'>
-                {(childPosts.length > 0) && (!showComments) &&
+                {/* {(childPosts.length > 0) && (!showComments) &&
                   <button className='btn btn-sm btn-primary m-1' onClick={() => {
                     setShowComments(true) }}>View {childPosts.length} comment(s)</button>}
 
                 {(childPosts.length > 0) && (showComments) &&
                   <button className='btn btn-sm btn-primary m-1' onClick={() => {
-                    setShowComments(false) }}>Hide {childPosts.length} comment(s)</button>}
+                    setShowComments(false) }}>Hide {childPosts.length} comment(s)</button>} */}
 
-                {(currentUser) && <button className='btn btn-sm btn-primary m-1' onClick={() => {
-                  setCommentArea(prev => !prev)
+                {(!commentArea) && (currentUser) && <button className='btn btn-sm btn-outline-primary m-1' onClick={() => {
+                  setCommentArea(true)
                 }}>Comment</button>}
 
-                {(admin || moderator) && <button className='btn btn-sm btn-danger m-1' onClick={() => {
+                {(!commentArea) && (admin || moderator) && <button className='btn btn-sm btn-outline-danger m-1' onClick={() => {
                   deletePost(post)
                 }}>Delete</button>}
               </div>
@@ -226,9 +226,12 @@ $(document).ready(() => {
                   $('#create-comment-button').addClass('disabled') : $('#create-comment-button').removeClass('disabled')
               }} placeholder = "Write a comment here..." rows="1" required></textarea>
 
-              <button id='create-comment-button' className='col-auto btn btn-sm btn-primary ms-1 disabled'onClick={() => {
+              <button id='create-comment-button' className='col-auto btn btn-sm btn-outline-primary ms-1 disabled'onClick={() => {
                 if ($('#create-comment-text').val()) createPost(post, $('#create-comment-text').val())
               }}>Post comment</button>
+              <button id='cancel-comment-button' className='col-auto btn btn-sm btn-outline-danger ms-1'onClick={() => {
+                $('#create-comment-text').val(''); setCommentArea(false)
+              }}>Cancel</button>
             </div>}            
           </div>
         </div>
@@ -287,9 +290,17 @@ $(document).ready(() => {
     return (<>{feed}</>)
   }
 
+  function YouHaveToLogIn () {
+    return (<>
+      <h3>Welcome to My4uM!</h3>
+      <h6>You have to Log In/Sign Up to be able to post here.</h6>
+      <p><small>This is just experimental, so you can use a fake email. Your posts/comments can be deleted at any time!</small></p>
+    </>)
+  }
+
   function Header(props) {
     return (<>
-      <div className='row m-0 mb-1'>
+      {(admin || moderator || currentUser) ? <div className='row m-0 mb-1'>
         <textarea id='create-post-text' className="col" onChange={() => {
           ($('#create-post-text').val() === '') ? 
             $('#create-post-button').addClass('disabled') : $('#create-post-button').removeClass('disabled')
@@ -298,14 +309,13 @@ $(document).ready(() => {
         <button id='create-post-button' className='col-auto btn btn-sm btn-primary ms-1 disabled' onClick={() => {
             createPost(undefined , $('#create-post-text').val())
         }}>Create post</button>
-      </div>
+      </div> : <YouHaveToLogIn />}
     </>)
   }
 
   function NoPostsYet() {
     return (<>
-      <h2 className='m-5'>There are no posts yet!</h2>
-      <div className='row m-5'>
+      {(admin || moderator || currentUser) ? <div className='row m-5'>
         <textarea id='create-post-text' className='col' onChange={() => {
           ($('#create-post-text').val() === '') ? 
             $('#create-post-button').addClass('disabled') : $('#create-post-button').removeClass('disabled')
@@ -314,7 +324,8 @@ $(document).ready(() => {
         <button id='create-post-button' className='col-auto btn btn-primary ms-1 disabled' onClick={() => {
           createPost(undefined, $('#create-post-text').val())
         }}>Create post</button>
-      </div>
+      </div> : <YouHaveToLogIn />}
+      <h1 className='m-5'>There are no posts yet!</h1>
     </>)
   }
 
@@ -384,6 +395,7 @@ $(document).ready(() => {
     query.skip(skip)                                  // Will be used to implement pagination
     try {
       const rootPosts = await query.find()
+      for (const rootPost of rootPosts) rootPost.fetchWithInclude(['author', 'childPosts'])
       if (rootPosts.length < 1) {
         feedDiv.render(<NoPostsYet key = {'NoPostsYet'} />)
       } else {

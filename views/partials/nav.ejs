@@ -1,30 +1,105 @@
-    <nav class="navbar navbar-expand fixed-top bg-body-secondary">
+    <nav class="navbar navbar-expand-sm fixed-top bg-body-secondary">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">My4uM</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
 
-          <!-- React -->
-          <span id="new-wrapper"></span>
-
-          <!-- <span class="navbar-toggler-icon"></span> -->
+          <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/">Index</a>
+              <a class="nav-link" aria-current="page" href="/">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/signup">Sign Up</a>
+              <a class="nav-link" data-bs-target="#signup-container" data-bs-toggle="collapse" href="" >Sign Up</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="login">Log In</a>
+              <a class="nav-link" data-bs-target="#login-container" data-bs-toggle="collapse" href="" >Log In</a>
             </li>
           </ul>
-          <div id="current-user" class="navbar-text"></div>
-          <a href="" id="logout-link">Log Out</a>
+          <div id="current-user" class="navbar-text me-1"></div>
+          <a class="nav-link" id="logout-link" href="">Log Out</a>
         </div>
       </div>
     </nav>
+
+    <div class="container px-1 collapse" id="signup-container">
+      <div class="card rounded-1 m-2 p-3">
+        <h3>Sign Up</h3>
+        <form id="signupForm" name="signupForm" class="row g-2">
+          <div class="form-floating mb-2">
+            <input
+              type="email"
+              class="form-control"
+              id="signupEmail"
+              name="signupEmail"
+              placeholder="Email"
+              minlength="8"
+              maxlength="30"
+              required>
+              <label for="signupEmail">Email address</label>
+          </div>
+          <div class="form-floating mb-2">
+            <input
+              type="password"
+              class="form-control"
+              id="signupPassword"
+              name="signupPassword"
+              placeholder="Password"
+              minlength="8"
+              maxlength="30"
+              required>
+              <label for="signupPassword">Password</label>
+          </div>
+          <div>
+            <button id="signupSubmit" class="btn btn-outline-primary" type="submit">Sign Up</button>                
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="container px-1 collapse" id="login-container">
+      <div class="card rounded-1 m-2 p-3">
+        <h3>Log In</h3>
+
+        <form id="loginForm" name="loginForm" class="row g-2">
+          <div class="form-floating mb-2">
+            <input
+              type="email"
+              class="form-control"
+              id="loginEmail"
+              name="loginEmail"
+              placeholder="Email"
+              minlength="8"
+              maxlength="30"
+              required>
+            <label for="loginEmail" class="form-label">Email address</label>
+          </div>
+          <div class="form-floating mb-2">
+            <input
+              type="password"
+              class="form-control"
+              id="loginPassword"
+              name="loginPassword"
+              placeholder="Password"
+              minlength="8"
+              maxlength="30"
+              required>
+            <label for="loginPassword" class="form-label">Password</label>
+          </div>
+          <div>
+            <button id="loginSubmitBtn" class="btn btn-outline-primary col-auto" type="submit">Log In</button>
+          </div>
+        </form>
+      </div>
+    </div>
