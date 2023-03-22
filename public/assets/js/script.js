@@ -353,12 +353,13 @@ $(document).ready(() => {
   function App() {
     const [MainFeed, setMainFeed] = React.useState([])
     const [data, setData] = React.useState([])
+    const [state, setState] = React.useState('Loading')
 
     // Init
     React.useEffect(() => {
       authUser()
         .then(() => fetchFeed())
-        .then(feed => setData(feed))
+        .then(feed => {setData(feed); setState('Loaded')})
         .then(() => liveQuery())
     }, [])
 
@@ -379,10 +380,18 @@ $(document).ready(() => {
       subscription.on('create', () => fetchFeed().then(feed => setData(feed)))
       subscription.on('delete', () => fetchFeed().then(feed => setData(feed)))
     }
+    if (state === 'Loaded')
     return (<>
       {(MainFeed.length < 1) && <NoPostsYet />}
       {(MainFeed.length > 0) && <Header />}
       {(MainFeed.length > 0) && <FEED feed = { MainFeed } />}
+    </>)
+    if (state === 'Loading')
+    return (<>
+      <h1 style={{marginTop: '200px'}}>Loading...</h1>
+      <div className="spinner-border" style={{width: '3rem', height: '3rem', role: 'status'}}>
+        <span className="visually-hidden">Loading...</span>
+      </div>
     </>)
   }
   posFeedDiv.render(<App />)
