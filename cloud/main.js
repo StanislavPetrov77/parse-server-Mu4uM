@@ -1,3 +1,3 @@
 require('./functions/isLoggedIn')
-// require("./triggers/testObject");
-// require("./triggers/player");
+require('./functions/queryPosts')
+require('./functions/create-deletePost')

@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "My4uM-Server": {
+      "applicationId": "DUOfe0DIvESBzY0JgbkR7GPSHQpVeTMx6FgNFeuQ"
+    },
+    "_default": {
+      "link": "My4uM-Server"
+    }
+  }
+}

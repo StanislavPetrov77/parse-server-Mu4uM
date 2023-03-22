@@ -1,11 +1,11 @@
 {
-  "name": "parse-server-codecraft",
+  "name": "parse-server-my4um",
   "version": "1.4.0",
   "description": "An example Parse API server using the parse-server module",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jawache/parse-server-example"
+    "url": ""
   },
   "license": "MIT",
   "dependencies": {
@@ -17,9 +17,6 @@
     "parse-dashboard": "^5.0.0",
     "parse-server": "^5.4.2",
     "parse-server-simple-mailgun-adapter": "^1.0.1"
-  },
-  "scripts": {
-    "start": "node server.js"
   },
   "engines": {
     "node": ">=4.3"
