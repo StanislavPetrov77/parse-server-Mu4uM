@@ -292,7 +292,7 @@ $(document).ready(() => {
     </>)
   }
 
-  function Header(props) {
+  function CreateNewPost_WhatsOnYourMind(props) {
     return (<>
       <div className='row m-0 mb-1'>
         <textarea id='create-post-text' className="col" placeholder = "What's on your mind?" rows="1" required
@@ -308,8 +308,7 @@ $(document).ready(() => {
             if (content) {
               $('#create-post-text').val('')
               Parse.Cloud.run('createPost', { content: content })
-                // .then(() => reloadFeed())
-                .catch((error) => print(`Error creating post Header: ${error}`))
+                .catch((error) => print(`Error creating FIRST post: ${error}`))
             }
           }}
         >Create post</button>
@@ -317,7 +316,7 @@ $(document).ready(() => {
     </>)
   }
 
-  function NoPostsYet() {
+  function ThereAreNoPostsYet_YouCanBeTheFirstToPostHere() {
     return (<>
       <h1 className='m-5'>There are no posts yet!</h1>
       <div className='row m-5'>
@@ -382,8 +381,9 @@ $(document).ready(() => {
     }
     if (state === 'Loaded')
     return (<>
-      {(MainFeed.length < 1) && <NoPostsYet />}
-      {(MainFeed.length > 0) && <Header />}
+      {(!currentUser) && <YouHaveToLogIn />}
+      {(MainFeed.length < 1) && <ThereAreNoPostsYet_YouCanBeTheFirstToPostHere />}
+      {(currentUser) && (MainFeed.length > 0) && <CreateNewPost_WhatsOnYourMind />}
       {(MainFeed.length > 0) && <FEED feed = { MainFeed } />}
     </>)
     if (state === 'Loading')
