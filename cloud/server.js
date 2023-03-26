@@ -100,7 +100,7 @@ app.get('/', (req, res) => res.render('index'))
 const port = process.env.PORT || 1337
 const httpServer = require('http').createServer(app)
 httpServer.listen(port, () => {
-	console.log(`Mu4uM server running on port: ${port}.`)
+	console.log(`My4uM server running on port: ${port}.`)
 })
 
 // This will enable the Live Query real-time server
