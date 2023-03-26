@@ -21,45 +21,11 @@ if (B4A) {
   Parse.serverURL = LOCAL_SERVER_URL
 }
 
+
 $(document).ready(() => {
 
   const postFeedNode = document.getElementById('post-feed')
   const posFeedDiv = ReactDOM.createRoot(postFeedNode)
-
-  class FeedPost {
-    constructor(parsePost, lines) {
-      this.id = parsePost._getId()
-      this.avatar = parsePost.get('author').get('avatar').url()
-      this.author = parsePost.get('author').get('username')
-      this.createdAt = parsePost.get('createdAt')
-      this.content =  parsePost.get('content')
-      this.parent = parsePost.get('parentPost')
-      this.comments = parsePost.get('comments')?.length ?? 0
-      this.lines = lines
-    }
-  }
-
-  class ParsePost extends Parse.Object {
-    constructor() { super('Posts') }
-
-    get content()   { return this.get('content')}
-    get authorObj() { return this.get('author')}
-    get author()    { return this.get('author').get('username')}
-    get avatar()    { return this.get('author').get('avatar')?.url() ?? DEFAULT_AVATAR}
-    get comments()  { return this.get('comments')}
-    get parent()    { return this.get('parentPost')}
-    get createdAt() { return this.get('createdAt')}
-
-    set content(content)      { this.set('content', content)}
-    set authorObj(authorObj)  { this.set('author', authorObj)}
-    set comments(comments)    { this.set('comments', comments)}
-    set parent(parent)        { this.set('parentPost', parent)}
-
-    set unsiftComments(comment)     { this.comments.unshift(comment); this.set('comments', this.comments)}
-    set removeFromComments(comment) { this.set('comments', this.comments.filter(c => c != comment))}
-  }
-  Parse.Object.registerSubclass('Posts', ParsePost)
-
   let admin, currentUser
 
   function slideMessage(message, timeOut = 6, color = 'bg-success') {
@@ -375,7 +341,7 @@ $(document).ready(() => {
         serverURL: B4A ? B4A_LIVE_QUERY_SERVER_URL : LOCAL_LIVE_QUERY_SERVER_URL,
       })
       liveQueryClient.open()
-      const subscription = liveQueryClient.subscribe(new Parse.Query(ParsePost).descending('createdAt').limit(10))
+      const subscription = liveQueryClient.subscribe(new Parse.Query('Posts').descending('createdAt').limit(10))
       subscription.on('create', () => fetchFeed().then(feed => setData(feed)))
       subscription.on('delete', () => fetchFeed().then(feed => setData(feed)))
     }
