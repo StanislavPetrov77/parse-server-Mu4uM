@@ -59,6 +59,7 @@ $(document).ready(() => {
 
   function MainApp() {
     const [user, setUser] = React.useState(null)
+    const [state, setState] = React.useState('Show feed')
 
     React.useEffect(() => {
       // SignUp //
@@ -126,6 +127,12 @@ $(document).ready(() => {
         navbarDrop.toggle()
       })
 
+
+      $('#profile-link').click(event => {
+        event.preventDefault()
+        setState('Profile edit')
+      })
+
       authUser()
     }, [])
 
@@ -156,7 +163,28 @@ $(document).ready(() => {
       }
     }
 
-    return (<App user = { user } />)
+    if (state === 'Show feed') return (<App user = { user } />)
+    if (state === 'Profile edit') return (<ProfileEdit user = { user } />)
+
+    function ProfileEdit({ user }) {
+      return (
+        <div className="card">
+          <div className="card-header">
+            <h3>Edit your profile</h3>
+          </div>
+          <div className="card-text">
+            <Avatar avatar = {user.get('avatar')?.url() ?? DEFAULT_AVATAR} />
+            <p>User name: {user.get('username')}</p>
+            <p>Email: {user.get('email')}</p>
+            <p>Change password:</p>
+          </div>
+          <div className="card-footer">
+            <button className="btn btn-outline-primary" onClick={() => setState('Show feed')}>Save</button>
+            <button className="btn btn-outline-danger" onClick={() => setState('Show feed')}>Cancel</button>
+          </div>
+        </div>
+        )
+    }
   }
 
   function timeDiff(time) { // Should be neater...
@@ -411,5 +439,6 @@ $(document).ready(() => {
   postFeedDiv.render(<MainApp />)
 
 }) // document.ready
+
 
 // function delay(delayTime) { return new Promise(resolve => setTimeout(resolve, delayTime)) }
