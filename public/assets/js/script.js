@@ -163,9 +163,6 @@ $(document).ready(() => {
       }
     }
 
-    if (state === 'Show feed') return (<App user = { user } />)
-    if (state === 'Profile edit') return (<ProfileEdit user = { user } />)
-
     function ProfileEdit({ user }) {
       return (
         <div className="card">
@@ -185,6 +182,9 @@ $(document).ready(() => {
         </div>
         )
     }
+
+    if (state === 'Show feed') return (<App user = { user } />)
+    if (state === 'Profile edit') return (<ProfileEdit user = { user } />)
   }
 
   function timeDiff(time) { // Should be neater...
