@@ -2,7 +2,7 @@ if (process.env.NODE_ENV !== 'production') require('dotenv').config()
 
 const express = require('express')
 const { ParseServer } = require('parse-server')
-const ParseDashboard = require('parse-dashboard')
+// const ParseDashboard = require('parse-dashboard')
 const path = require('path')
 
 // const S3Adapter = require('parse-server').S3Adapter
@@ -10,7 +10,7 @@ const path = require('path')
 
 const app = express()
 
-app.set('view engine', 'ejs')
+// app.set('view engine', 'ejs')
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
@@ -63,31 +63,31 @@ const server = new ParseServer({
 })
 
 
-const dashboard = new ParseDashboard({
-	apps: [
-	  {
-		serverURL: process.env.SERVER_URL,
-		appId: process.env.APP_ID,
-		masterKey: process.env.MASTER_KEY,
-		appName: process.env.APP_NAME
-	  }
-	],
-	users: [
-	  {
-		user: process.env.ADMIN_USERNAME,
-		pass: process.env.ADMIN_PASSWORD,
-		apps: [
-		  {
-			appId: process.env.APP_ID
-		  }
-		]
-	  }
-	]
-  }, { allowInsecureHTTP: true })
+// const dashboard = new ParseDashboard({
+// 	apps: [
+// 	  {
+// 		serverURL: process.env.SERVER_URL,
+// 		appId: process.env.APP_ID,
+// 		masterKey: process.env.MASTER_KEY,
+// 		appName: process.env.APP_NAME
+// 	  }
+// 	],
+// 	users: [
+// 	  {
+// 		user: process.env.ADMIN_USERNAME,
+// 		pass: process.env.ADMIN_PASSWORD,
+// 		apps: [
+// 		  {
+// 			appId: process.env.APP_ID
+// 		  }
+// 		]
+// 	  }
+// 	]
+//   }, { allowInsecureHTTP: true })
 
 
 // Serve static assets from the /public folder
-app.use('/public', express.static(path.join(__dirname, '/../public')))
+// app.use('/public', express.static(path.join(__dirname, '/../public')))
 
 
 // Serve the Parse API on the /parse URL prefix
@@ -95,7 +95,9 @@ const mountPath = process.env.PARSE_MOUNT || '/parse'
 app.use(mountPath, server)
 // app.use('/dashboard', dashboard)
 
-app.get('/', (req, res) => res.render('index'))
+// app.get('/', (req, res) => res.render('index'))
+// app.get('/', (req, res) => res.sendFile(path.join(__dirname, '/dist/index.html')))
+app.use(express.static('dist'))
 
 const port = process.env.PORT || 1337
 const httpServer = require('http').createServer(app)

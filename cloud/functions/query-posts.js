@@ -63,7 +63,7 @@ Parse.Cloud.define('queryPosts', async (req) => {
     async function pushComments(post, indent) {
       const postQuery = await new Parse.Query('Posts')
         .equalTo('parentPost', post)
-        .descending('createdAt')
+        .ascending('createdAt')
         .include('author')
         .find()
       for (const index in postQuery) {
