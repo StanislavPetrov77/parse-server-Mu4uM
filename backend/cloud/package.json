@@ -1,8 +1,11 @@
 {
-  "name": "parse-server-my4um",
+  "name": "my4um-server",
   "version": "1.4.0",
-  "description": "An example Parse API server using the parse-server module",
-  "main": "index.js",
+  "description": "A simple forum app using ExpressJS and parse-server",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon run dev"
+  },
   "repository": {
     "type": "git",
     "url": ""
