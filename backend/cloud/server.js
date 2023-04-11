@@ -95,8 +95,6 @@ const mountPath = process.env.PARSE_MOUNT || '/parse'
 app.use(mountPath, server)
 // app.use('/dashboard', dashboard)
 
-// app.get('/', (req, res) => res.render('index'))
-// app.get('/', (req, res) => res.sendFile(path.join(__dirname, '/dist/index.html')))
 app.use(express.static('dist'))
 
 const port = process.env.PORT || 1337
