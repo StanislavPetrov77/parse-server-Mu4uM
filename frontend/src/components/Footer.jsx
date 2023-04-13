@@ -1,4 +1,3 @@
-
 export default function Footer () {
-  return <p className="footer">&copy; Copyright 2023 Stanislav Petrov</p>
+  return <p className="white-center">&copy; Copyright 2023 Stanislav Petrov</p>
 }

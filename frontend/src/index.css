@@ -237,15 +237,10 @@ p.post-body {
 }
 
 
-.footer {
-  color: white;
-  text-align: center;
-}
-
-.please-log-in {
+.white-center {
   text-align: center;
   color: white;
-  padding: 0;
+  padding: 1em;
   margin: 0;
 }
 

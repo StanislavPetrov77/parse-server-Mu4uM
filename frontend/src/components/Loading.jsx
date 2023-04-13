@@ -1,3 +1,3 @@
 export default function Loading({ msg }) {
-    return <h1 className="loading">{ msg }</h1>
+  return <h1 className="loading">{ msg }</h1>
 }
