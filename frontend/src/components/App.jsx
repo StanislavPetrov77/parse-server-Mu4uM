@@ -31,13 +31,13 @@ export default function App() {
   useEffect(() => {
 
     Parse.initialize(defs.B4A ? defs.B4A_APP_ID : defs.LOCAL_APP_ID, defs.B4A ? defs.B4A_JS_KEY : defs.LOCAL_JS_KEY)
-    // Parse.serverURL = defs.B4A ? defs.B4A_SERVER_URL : defs.LOCAL_SERVER_URL
-    Parse.serverURL = '/parse'
+    Parse.serverURL = defs.B4A ? defs.B4A_SERVER_URL : defs.LOCAL_SERVER_URL
+    // Parse.serverURL = '/parse'
 
-    // init parse -> check parse health -> then auth -> setParseReady(true)
-    SLEEP(800).then(() => setParseReady(true)).then(authUser).catch(tsm)
+    setParseReady(true)
+    authUser().then(() => openLiveQuery()).catch(tsm)
 
-    openLiveQuery()
+    
     return () => { closeLiveQuery(); setParseReady(false) }
   }, [])
 
@@ -48,20 +48,22 @@ export default function App() {
   }
 
   useEffect(() => {
-    SLEEP(1600).then(() => getPosts()).then(() => setPostsReady(true)).catch(tsm)
+    setActiveForm(null)
+    getPosts().then(() => setPostsReady(true)).catch(tsm)
     return () => setPostsReady(false)
   }, [user])
 
 
   function submitForm(e, username, password) {
     e.preventDefault()
-    setActiveForm(null)
+    // setActiveForm(null)
     if (activeForm === 'Log In') Parse.User.logIn(username, password).then(authUser).catch(tsm)
     if (activeForm === 'Sign Up') Parse.User.signUp(username, password).then(authUser).catch(tsm)
   }
 
   function logOut(e) {
     e.preventDefault()
+    // setActiveForm(null)
     Parse.User.logOut().then(authUser).catch(tsm)
   }
 
@@ -80,7 +82,7 @@ export default function App() {
   return <>
     <Nav user={ user } setActiveForm={ setActiveForm } logOut={ logOut } />
     <Wallpaper src={'/assets/images/wallpaper-05.jpg'} />
-    { activeForm && <Form activeForm={ activeForm } setActiveForm={ setActiveForm } submitForm={ submitForm } /> }
+    { activeForm && <Form user={ user } activeForm={ activeForm } setActiveForm={ setActiveForm } submitForm={ submitForm } /> }
     { parseReady
       ? postsReady
         ? <>

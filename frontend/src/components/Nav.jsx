@@ -7,6 +7,7 @@ export default function Nav({ user, setActiveForm, logOut }) {
       <div className='link' onClick={ () => setActiveForm('Sign Up') } >Sign Up</div>
       <div className='link' onClick={ () => setActiveForm('Log In') } >Log In</div>
       <div className='link' onClick={ logOut } >Log Out</div>
+      {/* { user && <div className='link' onClick={ () => setActiveForm('Edit profile') } >Profile</div> } */}
       <div className="nav-current-user">{ user?.userName ?? 'Guest'} {user?.admin ? '(Admin)' : ''}</div>
       <img className='nav-avatar' src={ user?.avatar ?? defs.DEFAULT_AVATAR } />
     </div>

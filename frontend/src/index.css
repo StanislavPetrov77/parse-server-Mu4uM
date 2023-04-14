@@ -1,6 +1,6 @@
-* {
+/* * {
   box-sizing: border-box;
-}
+} */
 
 :root {
   font-family: 'Segoe UI Historic', sans-serif;
@@ -103,42 +103,54 @@ body {
 
 /*    Form    */
 .form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: var(--nav-backcolor);
-  padding: 0 20px 20px 20px;
+  padding: 1em;
   border-radius: var(--border-radius);
   box-shadow: 0 0 8px 0 var(--nav-link-hover-backcolor);
   z-index: 2000;
 }
 
+.form-header {
+  color: white;
+}
+
 .input {
   display: block;
-  width: 300px;
+  width: 350px;
   padding: 8px;
-  margin: 0 0 20px;
   border: 0;
   border-radius: var(--border-radius);
+}
+
+.form .buttons {
+  display: flex;
+  gap: 1em;
 }
 
 .form button {
   border-radius: var(--border-radius);
   border: 0;
-  width: 145px;
-  height: 40px;
+  padding: 0.75em;
+  flex-grow: 1;
 }
 
-.form .cancel-button {
-  margin-right: 5px;
+.change-avatar {
+  display: flex;
+  align-items: center;
+  gap: 1em;
 }
 
-.form .submit-button {
-  margin-left: 5px;
+.profile-avatar {
+  height: 4rem;
+  border-radius: 50%;
 }
-
-
 
 h1.loading {
   color: white;
@@ -243,4 +255,3 @@ p.post-body {
   padding: 1em;
   margin: 0;
 }
-
